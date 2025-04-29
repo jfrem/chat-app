@@ -1,0 +1,113 @@
+name: Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: chat_app_test
+          MYSQL_USER: chat_user
+          MYSQL_PASSWORD: chat_password
+          MYSQL_ROOT_PASSWORD: root_password
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    
+    steps:
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql, redis
+        coverage: xdebug
+    
+    - uses: actions/checkout@v3
+    
+    - name: Copy .env
+      run: |
+        cd backend
+        cp .env.example .env
+        sed -i 's/DB_HOST=mysql/DB_HOST=127.0.0.1/g' .env
+        sed -i 's/REDIS_HOST=redis/REDIS_HOST=127.0.0.1/g' .env
+        sed -i 's/DB_DATABASE=chat_app/DB_DATABASE=chat_app_test/g' .env
+    
+    - name: Install PHP dependencies
+      run: |
+        cd backend
+        composer install --prefer-dist --no-progress
+    
+    - name: Generate key
+      run: |
+        cd backend
+        php artisan key:generate
+    
+    - name: Directory permissions
+      run: |
+        cd backend
+        chmod -R 777 storage bootstrap/cache
+    
+    - name: Run migrations
+      run: |
+        cd backend
+        php artisan migrate
+    
+    - name: Execute tests (PHPUnit)
+      run: |
+        cd backend
+        php artisan test --coverage-clover=coverage.xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./backend/coverage.xml
+        fail_ci_if_error: false
+        verbose: true
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run linting
+      run: |
+        cd frontend
+        npm run lint
+    
+    - name: Run tests
+      run: |
+        cd frontend
+        npm test -- --coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./frontend/coverage/lcov.info
+        fail_ci_if_error: false
+        verbose: true

@@ -1,0 +1,57 @@
+# Archivos específicos del proyecto
+.env
+.env.local
+.env.*.local
+
+# Directorios de dependencias
+/backend/vendor
+/frontend/node_modules
+/node_modules
+
+# Archivos de IDE y editores
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Directorios de compilación
+/frontend/.next
+/frontend/build
+/frontend/out
+/frontend/dist
+/backend/public/hot
+/backend/public/storage
+/backend/storage/*.key
+/backend/bootstrap/cache
+
+# Archivos de log
+*.log
+/backend/storage/logs/*
+!/backend/storage/logs/.gitkeep
+
+# Directorios temporales
+/temp
+/tmp
+
+# Archivos de prueba y cobertura
+/backend/.phpunit.result.cache
+/backend/coverage
+/frontend/coverage
+
+# Certificados SSL locales
+/docker/nginx/ssl/*
+!/docker/nginx/ssl/.gitkeep
+
+# Archivos generados por Docker
+docker-compose.override.yml
+
+# MySQL
+/docker/mysql/data
+
+# Redis
+/docker/redis/data

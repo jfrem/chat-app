@@ -1,0 +1,29 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+RUN npm install -g laravel-echo-server pm2
+
+# Copy Echo Server config
+COPY laravel-echo-server.json /app/laravel-echo-server.json
+
+# Create PM2 config file
+RUN echo '{ \
+  "apps": [{ \
+    "name": "echo-server", \
+    "script": "laravel-echo-server", \
+    "args": "start", \
+    "exec_mode": "fork", \
+    "instances": 1, \
+    "autorestart": true, \
+    "max_restarts": 20, \
+    "max_memory_restart": "256M" \
+  }] \
+}' > /app/ecosystem.config.json
+
+# Expose ports
+EXPOSE 6001
+
+# Use PM2 to run Echo Server with monitoring and auto-restart
+CMD ["pm2-runtime", "start", "/app/ecosystem.config.json"]

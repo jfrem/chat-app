@@ -1,0 +1,31 @@
+FROM nginx:stable-alpine
+
+# Add Bash and SSL-related tools
+RUN apk add --no-cache bash openssl certbot certbot-nginx
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy configuration
+COPY ./conf.d /etc/nginx/conf.d/
+
+# Create SSL directory
+RUN mkdir -p /etc/nginx/ssl
+
+# Create log directories
+RUN mkdir -p /var/log/nginx
+
+# Copy frontend build for direct serving
+COPY ./frontend/build /var/www/frontend
+
+# Add entrypoint script for SSL cert renewal
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Standard HTTP/HTTPS ports exposure
+EXPOSE 80
+EXPOSE 443
+
+# Use entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
