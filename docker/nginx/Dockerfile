@@ -7,7 +7,7 @@ RUN apk add --no-cache bash
 WORKDIR /var/www/html
 
 # Copy configuration
-COPY ./conf.d /etc/nginx/conf.d/
+# COPY ./conf.d /etc/nginx/conf.d/
 
 # Create log directories
 RUN mkdir -p /var/log/nginx

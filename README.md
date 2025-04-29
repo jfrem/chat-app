@@ -147,6 +147,11 @@ chat-app/
    docker-compose exec php chmod -R 775 /var/www/html/bootstrap/cache
 
    sudo chown -R $USER:$USER /home/$USER
+
+   docker-compose logs -f
+   docker-compose down && docker image prune -a
+   docker-compose up -d
+   
    ```
 
 4. Crear un pull request a la rama principal
